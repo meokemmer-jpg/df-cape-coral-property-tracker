@@ -15,6 +15,26 @@ q0_caveats:
 phronesis_required: true
 sandbox_default: true
 
+# === Default-Action (per ausreden-schutz.md Schicht 2, Welle-47 Migration Batch-2) ===
+default_action:
+  description: "Cape-Coral Real-Estate-Monitoring: Property-Listings + Pricing-Trends + Government-Data (Permits/Tax) Weekly-Sync, Output: Property-Watchlist-Updates + Q_0-Risk-Flag pro Listing"
+  rho_per_run_eur: 80
+  rho_validation_source: unvalidated
+  block_gates:
+    - gate_id: K14
+      block_reason: "K_0-DIRECT $300-800k + Q_0-CRITICAL Familien-Hauptwohnsitz: Phronesis-Required + sandbox_default=true"
+      false_block_cost_eur: 300
+      legitimate_block_condition: "Real-Property-Acquisition-Action ohne Martin-Phronesis (Acquisition bleibt L13)"
+    - gate_id: K13_PAV
+      block_reason: "Pre-Action-Verification: government_data_source + property_url + env_tag (sandbox/prod) Pflicht"
+      false_block_cost_eur: 60
+      legitimate_block_condition: "Real-Government-API ohne Rate-Limit ODER Property-Data-Read auf stale Source"
+    - gate_id: K11
+      block_reason: "Cascade-Containment: Property-Tracker-Failure darf nicht Wegzugsteuer/E-2-DFs beeinflussen"
+      false_block_cost_eur: 50
+      legitimate_block_condition: "Cross-DF-Cascade auf Wegzugs-Steuer- oder E-2-Visa-Pipeline"
+  graceful_degradation_path: "Read-only-Property-Watchlist mit gecachten Government-Daten, kein Real-Acquisition-Trigger"
+
 cascade_isolation: hard
 failure_blast_radius: 1
 output_feeds_into_training: false
