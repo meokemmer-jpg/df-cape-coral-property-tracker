@@ -1,0 +1,9 @@
+{
+  "df": "df-cape-coral-property-tracker",
+  "ts": "2026-06-09T16:10:29.302467+00:00",
+  "ok": true,
+  "bytes": 4895,
+  "model": "kemmer-14b-ctx8k",
+  "mode": "produce",
+  "duration_s": 62.8
+}

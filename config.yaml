@@ -6,35 +6,40 @@ crux-mk: true
 k0_touch: true
 q0_touch: true
 k0_caveats:
-  - "Real-Estate-Investment $300-800k Direct-Berührung"
-  - "Wegzugssteuer-Implikation bei DE-Verkauf zur USA-Finanzierung"
+- Real-Estate-Investment $300-800k Direct-Berührung
+- Wegzugssteuer-Implikation bei DE-Verkauf zur USA-Finanzierung
 q0_caveats:
-  - "Familien-Hauptwohnsitz-Wechsel Q_0 KRITISCH"
-  - "Schul-Wechsel Kinder + Familien-Brueder-Distanz"
-  - "Brueder-Kohaesion-Risk durch Atlantik-Distanz"
+- Familien-Hauptwohnsitz-Wechsel Q_0 KRITISCH
+- Schul-Wechsel Kinder + Familien-Brueder-Distanz
+- Brueder-Kohaesion-Risk durch Atlantik-Distanz
 phronesis_required: true
 sandbox_default: true
-
-# === Default-Action (per ausreden-schutz.md Schicht 2, Welle-47 Migration Batch-2) ===
 default_action:
-  description: "Cape-Coral Real-Estate-Monitoring: Property-Listings + Pricing-Trends + Government-Data (Permits/Tax) Weekly-Sync, Output: Property-Watchlist-Updates + Q_0-Risk-Flag pro Listing"
+  description: 'Cape-Coral Real-Estate-Monitoring: Property-Listings + Pricing-Trends
+    + Government-Data (Permits/Tax) Weekly-Sync, Output: Property-Watchlist-Updates
+    + Q_0-Risk-Flag pro Listing'
   rho_per_run_eur: 80
   rho_validation_source: unvalidated
   block_gates:
-    - gate_id: K14
-      block_reason: "K_0-DIRECT $300-800k + Q_0-CRITICAL Familien-Hauptwohnsitz: Phronesis-Required + sandbox_default=true"
-      false_block_cost_eur: 300
-      legitimate_block_condition: "Real-Property-Acquisition-Action ohne Martin-Phronesis (Acquisition bleibt L13)"
-    - gate_id: K13_PAV
-      block_reason: "Pre-Action-Verification: government_data_source + property_url + env_tag (sandbox/prod) Pflicht"
-      false_block_cost_eur: 60
-      legitimate_block_condition: "Real-Government-API ohne Rate-Limit ODER Property-Data-Read auf stale Source"
-    - gate_id: K11
-      block_reason: "Cascade-Containment: Property-Tracker-Failure darf nicht Wegzugsteuer/E-2-DFs beeinflussen"
-      false_block_cost_eur: 50
-      legitimate_block_condition: "Cross-DF-Cascade auf Wegzugs-Steuer- oder E-2-Visa-Pipeline"
-  graceful_degradation_path: "Read-only-Property-Watchlist mit gecachten Government-Daten, kein Real-Acquisition-Trigger"
-
+  - gate_id: K14
+    block_reason: 'K_0-DIRECT $300-800k + Q_0-CRITICAL Familien-Hauptwohnsitz: Phronesis-Required
+      + sandbox_default=true'
+    false_block_cost_eur: 300
+    legitimate_block_condition: Real-Property-Acquisition-Action ohne Martin-Phronesis
+      (Acquisition bleibt L13)
+  - gate_id: K13_PAV
+    block_reason: 'Pre-Action-Verification: government_data_source + property_url
+      + env_tag (sandbox/prod) Pflicht'
+    false_block_cost_eur: 60
+    legitimate_block_condition: Real-Government-API ohne Rate-Limit ODER Property-Data-Read
+      auf stale Source
+  - gate_id: K11
+    block_reason: 'Cascade-Containment: Property-Tracker-Failure darf nicht Wegzugsteuer/E-2-DFs
+      beeinflussen'
+    false_block_cost_eur: 50
+    legitimate_block_condition: Cross-DF-Cascade auf Wegzugs-Steuer- oder E-2-Visa-Pipeline
+  graceful_degradation_path: Read-only-Property-Watchlist mit gecachten Government-Daten,
+    kein Real-Acquisition-Trigger
 cascade_isolation: hard
 failure_blast_radius: 1
 output_feeds_into_training: false
@@ -43,15 +48,17 @@ external_anchor_validation_frequency: weekly
 concurrent_spawn_protection: both
 lock_dir: /tmp/df-cape-coral-property-tracker.lock
 lock_stale_age_h: 6
-
 lose_coupling:
   LC1_graceful_degradation:
-    degradation_modes: [full, degraded_no_external, sandbox_mock]
+    degradation_modes:
+    - full
+    - degraded_no_external
+    - sandbox_mock
     degradation_test_required: true
   LC2_direct_mode:
     direct_mode_available: true
     direct_mode_capability: 0.6
-    direct_mode_trigger: "external API unreachable >30s"
+    direct_mode_trigger: external API unreachable >30s
   LC3_circuit_breaker:
     circuit_breaker_timeout_s: 30
     circuit_breaker_open_threshold: 3
@@ -63,13 +70,32 @@ lose_coupling:
   LC5_health_check:
     health_check_dependencies: []
     health_check_degraded_score: 0.7
-    health_check_endpoint_or_file: "branch-hub/state/df-cape-coral-property-tracker-health.json"
-
+    health_check_endpoint_or_file: branch-hub/state/df-cape-coral-property-tracker-health.json
 env_vars:
-  DF_CAPE_CORAL_REAL_ENABLED: "false"
-  PHRONESIS_TICKET: "MISSING"
-
+  DF_CAPE_CORAL_REAL_ENABLED: 'false'
+  PHRONESIS_TICKET: MISSING
 schedule:
   cadence: daily
-  time: "04:00"
+  time: 04:00
   timezone: Europe/Berlin
+activation_gates:
+  internal_real_mode:
+    env_var: df-cape-coral-property-tracker_INTERNAL_REAL_ENABLED
+    default: false
+    description: Echte Daten-Verarbeitung lokal/sandbox, KEIN External-Output
+  external_real_mode:
+    env_var: df-cape-coral-property-tracker_REAL_ENABLED
+    default: false
+    description: Real-Mode mit External-Output (Phronesis-Sign-Off Pflicht)
+    requires:
+      phronesis_ticket_env: PHRONESIS_TICKET
+      signoff_id_env: OPERATOR_SIGNOFF_ID
+  external_output_gate:
+    env_var_signoff_id: OPERATOR_SIGNOFF_ID
+    default: BLOCKED
+    description: Mechanischer Block fuer External-Communication ohne Sign-Off
+output_pipe_block:
+- external_api_call_unverified
+- production_db_write_unverified
+
+# [CRUX-MK]
